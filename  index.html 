@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curvelo 2025 | Dashboard de Estabelecimentos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <i class="fas fa-chart-network"></i>
+                        <span>CURVELO 2025</span>
+                    </div>
+                    <h1>Dashboard de Estabelecimentos</h1>
+                    <p class="subtitle">Análise em tempo real de supermercados e mercearias</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-badge">
+                        <i class="fas fa-store"></i>
+                        <span id="totalEstabelecimentosHeader">17</span>
+                        <small>Estabelecimentos</small>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="fas fa-star"></i>
+                        <span id="mediaNotaHeader">4.4</span>
+                        <small>Nota Média</small>
+                    </div>
+                    <div class="stat-badge highlight">
+                        <i class="fas fa-trophy"></i>
+                        <span id="melhorRankingHeader">10</span>
+                        <small>Melhor Ranking</small>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filtros -->
+        <div class="filters-panel">
+            <div class="filter-section">
+                <h3><i class="fas fa-sliders-h"></i> Filtros & Controles</h3>
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="categoriaSelect"><i class="fas fa-tags"></i> Categoria</label>
+                        <div class="select-wrapper">
+                            <select id="categoriaSelect">
+                                <option value="todos">Todos os Estabelecimentos</option>
+                                <option value="Supermercado">Supermercados</option>
+                                <option value="Mercearia">Mercearias</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="ordenacaoSelect"><i class="fas fa-sort-amount-down"></i> Ordenar por</label>
+                        <div class="select-wrapper">
+                            <select id="ordenacaoSelect">
+                                <option value="ranking">Ranking (Melhor primeiro)</option>
+                                <option value="nota">Nota (Maior primeiro)</option>
+                                <option value="nome">Nome (A-Z)</option>
+                                <option value="rankingAsc">Ranking (Pior primeiro)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="notaRange"><i class="fas fa-star"></i> Nota mínima: <span id="notaValue">3.0</span></label>
+                        <input type="range" id="notaRange" min="3" max="5" step="0.1" value="3">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="pesquisaInput"><i class="fas fa-search"></i> Pesquisar</label>
+                        <div class="search-wrapper">
+                            <input type="text" id="pesquisaInput" placeholder="Digite nome ou endereço...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-actions">
+                    <button id="resetFilters" class="btn-secondary">
+                        <i class="fas fa-redo"></i> Redefinir Filtros
+                    </button>
+                    <div class="active-filters" id="activeFilters">
+                        <!-- Filtros ativos serão exibidos aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid Principal -->
+        <main class="dashboard-grid">
+            <!-- Card 1: Resumo Estatístico -->
+            <div class="dashboard-card card-statistics">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> Estatísticas Gerais</h2>
+                    <div class="card-actions">
+                        <button class="btn-icon" id="refreshStats" title="Atualizar dados">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="totalEstabelecimentos">17</span>
+                                <span class="stat-label">Total de Estabelecimentos</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="mediaNota">4.4</span>
+                                <span class="stat-label">Nota Média</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="melhorNota">4.6</span>
+                                <span class="stat-label">Melhor Nota</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="piorNota">3.7</span>
+                                <span class="stat-label">Pior Nota</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Gráfico de Distribuição por Categoria -->
+            <div class="dashboard-card card-chart">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> Distribuição por Categoria</h2>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-color supermercado"></span> Supermercados</span>
+                        <span class="legend-item"><span class="legend-color mercearia"></span> Mercearias</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="graficoCategorias"></canvas>
+                    </div>
+                    <div class="chart-summary" id="categoriaSummary">
+                        <!-- Resumo será adicionado via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Gráfico de Distribuição de Notas -->
+            <div class="dashboard-card card-chart">
+                <div class="card-header">
+                    <h2><i class="fas fa-star-half-alt"></i> Distribuição de Notas</h2>
+                    <div class="card-actions">
+                        <button class="btn-icon chart-type-btn" data-chart="bar" title="Gráfico de Barras">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                        <button class="btn-icon chart-type-btn active" data-chart="line" title="Gráfico de Linha">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="graficoNotas"></canvas>
+                    </div>
+                    <div class="chart-summary" id="notasSummary">
+                        <!-- Resumo será adicionado via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Ranking Top 5 -->
+            <div class="dashboard-card card-ranking">
+                <div class="card-header">
+                    <h2><i class="fas fa-crown"></i> Top 5 Estabelecimentos</h2>
+                    <div class="ranking-filter">
+                        <button class="ranking-filter-btn active" data-filter="all">Todos</button>
+                        <button class="ranking-filter-btn" data-filter="supermercado">Supermercados</button>
+                        <button class="ranking-filter-btn" data-filter="mercearia">Mercearias</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="top-ranking-container">
+                        <div class="top-ranking" id="topRanking">
+                            <!-- Top 5 será carregado aqui -->
+                        </div>
+                    </div>
+                    <div class="ranking-info" id="rankingInfo">
+                        <!-- Informações adicionais sobre o ranking -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5: Lista Completa Interativa -->
+            <div class="dashboard-card card-list full-width">
+                <div class="card-header">
+                    <h2><i class="fas fa-list-ol"></i> Lista de Estabelecimentos</h2>
+                    <div class="list-actions">
+                        <span id="resultCount">17 resultados</span>
+                        <button class="btn-icon" id="toggleView" title="Alternar visualização">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="list-container" id="listContainer">
+                        <!-- Lista será carregada aqui -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Área de Detalhes Expandidos -->
+        <section class="detalhes-expandidos" id="detalhesExpandidos">
+            <div class="detalhes-header">
+                <h2><i class="fas fa-store-alt"></i> Análise Detalhada do Estabelecimento</h2>
+                <button class="btn-fechar-detalhes" id="fecharDetalhes">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+            </div>
+            
+            <div class="detalhes-grid">
+                <!-- Informações Básicas -->
+                <div class="dashboard-card detalhes-card info-basicas">
+                    <div class="card-header">
+                        <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Nome:</span>
+                            <span class="detalhe-valor" id="detalheNome">-</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Categoria:</span>
+                            <span class="detalhe-valor" id="detalheCategoria">-</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Nota:</span>
+                            <span class="detalhe-valor" id="detalheNota">-</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Ranking:</span>
+                            <span class="detalhe-valor" id="detalheRanking">-</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Endereço:</span>
+                            <span class="detalhe-valor" id="detalheEndereco">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparação com Média -->
+                <div class="dashboard-card detalhes-card comparacao">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Comparação com Média</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="comparacao-container">
+                            <div class="comparacao-item">
+                                <div class="comparacao-label">Sua Nota</div>
+                                <div class="comparacao-valor" id="comparacaoNota">-</div>
+                                <div class="comparacao-barra">
+                                    <div class="barra-progresso" id="barraNota"></div>
+                                </div>
+                            </div>
+                            <div class="comparacao-item">
+                                <div class="comparacao-label">Média da Categoria</div>
+                                <div class="comparacao-valor" id="comparacaoMedia">-</div>
+                                <div class="comparacao-barra">
+                                    <div class="barra-progresso" id="barraMedia"></div>
+                                </div>
+                            </div>
+                            <div class="comparacao-diferenca" id="comparacaoDiferenca">
+                                <!-- Diferença será calculada aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posição no Ranking -->
+                <div class="dashboard-card detalhes-card posicao-ranking">
+                    <div class="card-header">
+                        <h3><i class="fas fa-trophy"></i> Posição no Ranking</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="posicao-container">
+                            <div class="posicao-numero" id="posicaoNumero">-</div>
+                            <div class="posicao-label">Posição Geral</div>
+                            <div class="posicao-detalhes">
+                                <div class="posicao-item">
+                                    <span>Total de Estabelecimentos:</span>
+                                    <strong id="posicaoTotal">-</strong>
+                                </div>
+                                <div class="posicao-item">
+                                    <span>Na sua categoria:</span>
+                                    <strong id="posicaoCategoria">-</strong>
+                                </div>
+                                <div class="posicao-item">
+                                    <span>Percentil:</span>
+                                    <strong id="posicaoPercentil">-</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Competitivo -->
+                <div class="dashboard-card detalhes-card evolucao">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> Análise Competitiva</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="grafico-pequeno-container">
+                            <canvas id="graficoCompetitivo"></canvas>
+                        </div>
+                        <div class="analise-texto" id="analiseCompetitiva">
+                            Selecione um estabelecimento para ver a análise competitiva.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Próximos Competidores -->
+                <div class="dashboard-card detalhes-card competidores">
+                    <div class="card-header">
+                        <h3><i class="fas fa-users"></i> Próximos Competidores</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="competidores-lista" id="competidoresLista">
+                            <div class="competidor-item placeholder">
+                                <i class="fas fa-store"></i>
+                                <p>Selecione um estabelecimento para ver os competidores mais próximos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recomendações -->
+                <div class="dashboard-card detalhes-card recomendacoes">
+                    <div class="card-header">
+                        <h3><i class="fas fa-lightbulb"></i> Recomendações</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="recomendacoes-lista" id="recomendacoesLista">
+                            <div class="recomendacao-item placeholder">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Análise personalizada será gerada após selecionar um estabelecimento</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="dashboard-footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-chart-network"></i>
+                    <span>CURVELO 2025</span>
+                </div>
+                <div class="footer-info">
+                    <p>Dashboard desenvolvido para análise estratégica de estabelecimentos comerciais</p>
+                    <p class="timestamp">Última atualização: <span id="currentDate"></span></p>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-export" id="exportData">
+                        <i class="fas fa-file-export"></i> Exportar Dados
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
